@@ -1,0 +1,42 @@
+{
+  "name": "1 Service & Repair Technology - ERP & Management",
+  "short_name": "1Service ERP",
+  "description": "Enterprise management system for service billing, requisitions, gate pass challans, lab inventory, office rent, and payroll.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "650x650",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

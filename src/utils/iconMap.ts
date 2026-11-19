@@ -1,0 +1,60 @@
+import { 
+  LayoutDashboard, 
+  Briefcase, 
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign, 
+  Building2, 
+  Compass, 
+  MoreHorizontal, 
+  Wrench, 
+  ArrowDownLeft, 
+  ArrowUpRight, 
+  Users, 
+  Building, 
+  User, 
+  Receipt, 
+  ClipboardList, 
+  KeyRound, 
+  FileText, 
+  CreditCard, 
+  Ticket, 
+  Settings, 
+  UserCheck, 
+  Lock, 
+  Sliders, 
+  Folder, 
+  LucideIcon 
+} from 'lucide-react';
+
+const iconDictionary: Record<string, LucideIcon> = {
+  LayoutDashboard,
+  Briefcase,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Building2,
+  Compass,
+  MoreHorizontal,
+  Wrench,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Users,
+  Building,
+  User,
+  Receipt,
+  ClipboardList,
+  KeyRound,
+  FileText,
+  CreditCard,
+  Ticket,
+  Settings,
+  UserCheck,
+  Lock,
+  Sliders,
+};
+
+export const getNavigationIcon = (iconName: string): LucideIcon => {
+  return iconDictionary[iconName] || Folder;
+};
+
