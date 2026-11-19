@@ -41,3 +41,4 @@ npm run build
 
 ### 5. Desktop App Installation
 Open the web app in Chrome, Edge, or Safari, and click **Install as Desktop App** or use the browser address bar install prompt to install as a standalone native desktop software.
+
