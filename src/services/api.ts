@@ -24,16 +24,28 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor: handle 401 unauthorized
+// Response interceptor: handle 401 unauthorized & 403 license suspension
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  (error: AxiosError) => {
+  (error: AxiosError<any>) => {
     if (error.response?.status === 401) {
       // Clear local storage if token expired or invalid
       localStorage.removeItem('auth_token');
     }
+
+    if (error.response?.status === 403 && error.response?.data?.licenseSuspended) {
+      // Dispatch license suspended event across the frontend app
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('app-license-suspended', {
+            detail: error.response.data,
+          })
+        );
+      }
+    }
+
     return Promise.reject(error);
   }
 );
