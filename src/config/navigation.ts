@@ -140,16 +140,16 @@ export const navigationConfig: NavItem[] = [
         icon: User,
         children: [
           {
-            id: 'customer-non-corporate-requisition',
-            title: 'Requisition',
-            href: '/customer/non-corporate/requisition',
-            icon: FileText,
-          },
-          {
             id: 'customer-non-corporate-bill',
             title: 'Bill',
             href: '/customer/non-corporate/bill',
             icon: CreditCard,
+          },
+          {
+            id: 'customer-non-corporate-requisition',
+            title: 'Requisition',
+            href: '/customer/non-corporate/requisition',
+            icon: FileText,
           },
           {
             id: 'customer-non-corporate-gate-pass',
