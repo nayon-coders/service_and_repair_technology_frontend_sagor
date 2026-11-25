@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Plus, 
   Printer, 
@@ -11,7 +12,8 @@ import {
   Clock, 
   AlertCircle,
   ExternalLink,
-  Eye
+  Eye,
+  Receipt
 } from 'lucide-react';
 import { 
   DataTable, 
@@ -52,6 +54,7 @@ export const RequisitionManager: React.FC<RequisitionManagerProps> = ({
   title,
   subtitle,
 }) => {
+  const navigate = useNavigate();
   const [requisitions, setRequisitions] = useState<RequisitionRecord[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [totalGrandAmount, setTotalGrandAmount] = useState<number>(0);
@@ -270,6 +273,14 @@ export const RequisitionManager: React.FC<RequisitionManagerProps> = ({
   ];
 
   const rowActions: RowAction<RequisitionRecord>[] = [
+    {
+      label: 'Create Bill Voucher',
+      icon: Receipt,
+      onClick: (r) => {
+        const path = customerType === 'CORPORATE' ? '/customer/corporate/bill' : '/customer/non-corporate/bill';
+        navigate(`${path}?requisitionId=${r.id}`);
+      },
+    },
     {
       label: 'Print Estimate (New Tab)',
       icon: Printer,

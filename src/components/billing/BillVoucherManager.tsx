@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Plus, 
   Printer, 
@@ -61,6 +62,10 @@ export const BillVoucherManager: React.FC<BillVoucherManagerProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [apiError, setApiError] = useState<string | null>(null);
 
+  // URL Query Params (e.g. ?requisitionId=...)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlRequisitionId = searchParams.get('requisitionId');
+
   // Filters & Pagination
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<VoucherPaymentStatus | 'ALL'>('ALL');
@@ -112,6 +117,14 @@ export const BillVoucherManager: React.FC<BillVoucherManagerProps> = ({
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Open modal if requisitionId is present in URL
+  useEffect(() => {
+    if (urlRequisitionId) {
+      setActiveVoucher(null);
+      setIsFormModalOpen(true);
+    }
+  }, [urlRequisitionId]);
 
   // Currency format helper
   const formatCurrency = (val: number) => {
@@ -530,10 +543,15 @@ export const BillVoucherManager: React.FC<BillVoucherManagerProps> = ({
         onClose={() => {
           setIsFormModalOpen(false);
           setActiveVoucher(null);
+          if (urlRequisitionId) {
+            searchParams.delete('requisitionId');
+            setSearchParams(searchParams, { replace: true });
+          }
         }}
         onSubmit={handleFormSubmit}
         initialData={activeVoucher}
         defaultCustomerType={customerType}
+        initialRequisitionId={urlRequisitionId}
         isSubmitting={isSubmitting}
       />
 

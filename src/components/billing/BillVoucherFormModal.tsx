@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Receipt } from 'lucide-react';
+import { Plus, Trash2, Receipt, ClipboardList, CheckCircle2, RotateCcw } from 'lucide-react';
 import { Modal, Input, Select, Textarea, DatePicker, Button } from '../common';
 import { 
   BillVoucherRecord, 
@@ -9,9 +9,11 @@ import {
   CustomerType, 
   BillType, 
   VoucherPaymentStatus, 
-  VoucherPaymentMethod 
+  VoucherPaymentMethod,
+  RequisitionRecord 
 } from '../../types';
 import { fetchNextVoucherNo } from '../../services/voucherService';
+import { fetchRequisitions } from '../../services/requisitionService';
 
 interface BillVoucherFormModalProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ interface BillVoucherFormModalProps {
   onSubmit: (data: CreateBillVoucherInput | UpdateBillVoucherInput) => Promise<void>;
   initialData?: BillVoucherRecord | null;
   defaultCustomerType?: CustomerType;
+  initialRequisitionId?: string | null;
   isSubmitting?: boolean;
 }
 
@@ -78,6 +81,7 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
   onSubmit,
   initialData,
   defaultCustomerType = 'CORPORATE',
+  initialRequisitionId = null,
   isSubmitting = false,
 }) => {
   const [voucherNo, setVoucherNo] = useState('');
@@ -88,6 +92,12 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
   const [mobile, setMobile] = useState('');
   const [address, setAddress] = useState('');
   
+  // Requisition auto-fill state
+  const [requisitions, setRequisitions] = useState<RequisitionRecord[]>([]);
+  const [selectedRequisitionId, setSelectedRequisitionId] = useState<string>('');
+  const [isLoadingRequisitions, setIsLoadingRequisitions] = useState<boolean>(false);
+  const [autoFilledNote, setAutoFilledNote] = useState<string | null>(null);
+
   // Machine info
   const [machineName, setMachineName] = useState('');
   const [brandModel, setBrandModel] = useState('');
@@ -119,11 +129,50 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
   const dueAmount = Math.max(0, grandTotal - (Number(paidAmount) || 0));
   const amountInWords = clientNumberToWords(grandTotal);
 
+  // Requisition selection handler
+  const handleSelectRequisition = (id: string, reqList: RequisitionRecord[] = requisitions) => {
+    setSelectedRequisitionId(id);
+    if (!id) {
+      setAutoFilledNote(null);
+      return;
+    }
+
+    const req = reqList.find((r) => r.id === id);
+    if (!req) return;
+
+    setCustomerName(req.organizationName || '');
+    setMobile(req.contactNo || '');
+    setDepartment(req.departmentWard || '');
+    setMachineName(req.equipmentName || '');
+    setBrandModel([req.brand, req.model].filter(Boolean).join(' - '));
+    setSerialNo(req.serialNo || '');
+    setProblemComplaint(req.faultDescription || '');
+    setServiceCharge(Number(req.serviceLabourTotal) || 0);
+    setDiscount(Number(req.discount) || 0);
+
+    if (req.items && req.items.length > 0) {
+      setItems(
+        req.items.map((it, idx) => ({
+          sl: idx + 1,
+          description: it.description || '',
+          qty: Number(it.qty) || 1,
+          unitPrice: Number(it.unitPrice) || 0,
+          amount: (Number(it.qty) || 1) * (Number(it.unitPrice) || 0),
+          remarks: it.category === 'SERVICE_LABOUR' ? 'Service / Labour' : '',
+        }))
+      );
+    }
+
+    setAutoFilledNote(`রিকুইজিশন #${req.estimateNo} (${req.organizationName}) এর সমস্ত তথ্য সফলভাবে লোড হয়েছে।`);
+  };
+
   // Initialize or reset form
   useEffect(() => {
     if (!isOpen) return;
 
     if (initialData) {
+      setSelectedRequisitionId('');
+      setAutoFilledNote(null);
       setVoucherNo(initialData.voucherNo);
       setDate(initialData.date);
       setCustomerType(initialData.customerType);
@@ -174,13 +223,29 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
       setPreparedBy('Engr. Sagor Badsha');
       setItems([{ sl: 1, description: '', qty: 1, unitPrice: 0, amount: 0, remarks: '' }]);
 
+      setSelectedRequisitionId('');
+      setAutoFilledNote(null);
+
+      // Fetch requisitions for auto-fill in this customer domain
+      setIsLoadingRequisitions(true);
+      fetchRequisitions({ customerType: defaultCustomerType, limit: 100 })
+        .then((res) => {
+          const list = res.items || [];
+          setRequisitions(list);
+          if (initialRequisitionId) {
+            handleSelectRequisition(initialRequisitionId, list);
+          }
+        })
+        .catch((err) => console.warn('Could not load requisitions for auto-fill:', err))
+        .finally(() => setIsLoadingRequisitions(false));
+
       // Fetch next voucher number
       fetchNextVoucherNo()
         .then((no) => setVoucherNo(no))
         .catch(() => setVoucherNo(''));
     }
     setErrors({});
-  }, [isOpen, initialData, defaultCustomerType]);
+  }, [isOpen, initialData, defaultCustomerType, initialRequisitionId]);
 
   // Line items handlers
   const handleItemChange = (index: number, field: keyof BillVoucherItemRecord, value: unknown) => {
@@ -296,6 +361,66 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         
+        {/* Requisition Auto-fill Card (Only in Create Mode) */}
+        {!initialData && (
+          <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/80 to-slate-50 border border-blue-200 rounded-xl p-4 shadow-sm space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-blue-600 text-white rounded-lg shadow-sm">
+                  <ClipboardList className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-blue-900">
+                    রিকুইজিশন থেকে অটো-ফিল (Auto-Fill from Requisition)
+                  </h4>
+                  <p className="text-[11px] text-slate-600">
+                    পূর্ববর্তী রিকুইজিশন নির্বাচন করলে কাস্টমার, মেশিন ও পার্টসের সমস্ত তথ্য স্বয়ংক্রিয়ভাবে বসে যাবে।
+                  </p>
+                </div>
+              </div>
+              {selectedRequisitionId && (
+                <button
+                  type="button"
+                  onClick={() => handleSelectRequisition('')}
+                  className="text-xs text-rose-600 hover:text-rose-700 font-semibold flex items-center gap-1 self-start sm:self-auto px-2 py-1 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 transition-colors"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>ক্লিয়ার করুন</span>
+                </button>
+              )}
+            </div>
+
+            <div>
+              <select
+                value={selectedRequisitionId}
+                onChange={(e) => handleSelectRequisition(e.target.value)}
+                disabled={isLoadingRequisitions}
+                className="w-full text-xs font-medium text-slate-800 bg-white border border-blue-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm cursor-pointer disabled:bg-slate-100"
+              >
+                <option value="">
+                  {isLoadingRequisitions
+                    ? 'রিকুইজিশন তালিকা লোড হচ্ছে...'
+                    : requisitions.length === 0
+                    ? '-- এই কাস্টমার ক্যাটাগরিতে কোনো রিকুইজিশন পাওয়া যায়নি (ম্যানুয়ালি পূরণ করুন) --'
+                    : '-- কোনো রিকুইজিশন নির্বাচন করুন (Select Requisition to Auto-Fill) --'}
+                </option>
+                {requisitions.map((req) => (
+                  <option key={req.id} value={req.id}>
+                    [{req.estimateNo}] {req.organizationName} — {req.equipmentName || 'যন্ত্রপাতি'} (৳{Number(req.grandTotal).toLocaleString('en-IN')})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {autoFilledNote && (
+              <div className="text-xs font-medium text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-3 py-2 rounded-lg flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span>{autoFilledNote}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Section 1: Customer & Voucher Meta */}
         <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3 flex items-center gap-1.5">
