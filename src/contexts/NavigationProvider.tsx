@@ -23,7 +23,7 @@ export const NavigationProvider: React.FC<{ children: ReactNode }> = ({ children
     }));
   }, []);
 
-  // Merge static navigationConfig into dynamic items so newly added pages are always displayed
+  // Merge static navigationConfig into dynamic items and enforce exact ordering
   const mergeMenus = (dynamicItems: NavItem[], staticItems: NavItem[]): NavItem[] => {
     const result = [...dynamicItems];
     for (const staticItem of staticItems) {
@@ -37,7 +37,16 @@ export const NavigationProvider: React.FC<{ children: ReactNode }> = ({ children
         };
       }
     }
-    return result;
+
+    // Sort matching staticItems order to guarantee exact serial across all menus and submenus
+    const orderMap = new Map<string, number>();
+    staticItems.forEach((it, index) => orderMap.set(it.id, index));
+
+    return result.sort((a, b) => {
+      const orderA = orderMap.has(a.id) ? orderMap.get(a.id)! : 999;
+      const orderB = orderMap.has(b.id) ? orderMap.get(b.id)! : 999;
+      return orderA - orderB;
+    });
   };
 
   const loadNavigation = useCallback(async () => {
