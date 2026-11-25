@@ -23,6 +23,23 @@ export const NavigationProvider: React.FC<{ children: ReactNode }> = ({ children
     }));
   }, []);
 
+  // Merge static navigationConfig into dynamic items so newly added pages are always displayed
+  const mergeMenus = (dynamicItems: NavItem[], staticItems: NavItem[]): NavItem[] => {
+    const result = [...dynamicItems];
+    for (const staticItem of staticItems) {
+      const matchIndex = result.findIndex((d) => d.id === staticItem.id);
+      if (matchIndex === -1) {
+        result.push(staticItem);
+      } else if (staticItem.children && staticItem.children.length > 0) {
+        result[matchIndex] = {
+          ...result[matchIndex],
+          children: mergeMenus(result[matchIndex].children || [], staticItem.children),
+        };
+      }
+    }
+    return result;
+  };
+
   const loadNavigation = useCallback(async () => {
     if (!isAuthenticated) {
       setNavItems(navigationConfig);
@@ -36,7 +53,8 @@ export const NavigationProvider: React.FC<{ children: ReactNode }> = ({ children
       const apiItems = await fetchUserNavigation();
       if (apiItems && apiItems.length > 0) {
         const transformed = transformApiMenu(apiItems);
-        setNavItems(transformed);
+        const merged = mergeMenus(transformed, navigationConfig);
+        setNavItems(merged);
       } else {
         setNavItems(navigationConfig);
       }
