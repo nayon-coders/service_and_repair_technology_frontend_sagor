@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Trash2, Receipt, ClipboardList, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react';
-import { Modal, Input, Select, Textarea, DatePicker, Button } from '../common';
+import { Modal, Input, Select, Textarea, DatePicker, Button, PartAutocompleteInput } from '../common';
 import { 
   BillVoucherRecord, 
   BillVoucherItemRecord, 
@@ -11,11 +11,13 @@ import {
   BillType, 
   VoucherPaymentStatus, 
   VoucherPaymentMethod,
-  RequisitionRecord 
+  RequisitionRecord,
+  LabPartRecord 
 } from '../../types';
 import { fetchNextVoucherNo } from '../../services/voucherService';
 import { fetchRequisitions } from '../../services/requisitionService';
 import { fetchProblemTemplates } from '../../services/templateService';
+import { fetchLabParts } from '../../services/labInventoryService';
 
 interface BillVoucherFormModalProps {
   isOpen: boolean;
@@ -107,6 +109,7 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
   const [department, setDepartment] = useState('');
   const [problemComplaint, setProblemComplaint] = useState('');
   const [problemTemplates, setProblemTemplates] = useState<string[]>([]);
+  const [labParts, setLabParts] = useState<LabPartRecord[]>([]);
   const [receivedDate, setReceivedDate] = useState('');
 
   // Line Items
@@ -250,16 +253,34 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
     setErrors({});
   }, [isOpen, initialData, defaultCustomerType, initialRequisitionId]);
 
-  // Load problem templates when modal opens
+  // Load problem templates and lab parts when modal opens
   useEffect(() => {
     if (isOpen) {
       fetchProblemTemplates()
         .then((list) => setProblemTemplates(list))
         .catch((err) => console.warn('Could not load problem templates:', err));
+      fetchLabParts()
+        .then((parts) => setLabParts(parts))
+        .catch((err) => console.warn('Could not load lab parts:', err));
     }
   }, [isOpen]);
 
   // Line items handlers
+  const handleSelectLabPart = (index: number, part: LabPartRecord) => {
+    setItems((prev) => {
+      const updated = [...prev];
+      const current = { ...updated[index] };
+      current.description = part.name;
+      const qty = Number(current.qty) > 0 ? Number(current.qty) : 1;
+      const unitPrice = Number(part.unitPrice) || 0;
+      current.qty = qty;
+      current.unitPrice = unitPrice;
+      current.amount = qty * unitPrice;
+      updated[index] = current;
+      return updated;
+    });
+  };
+
   const handleItemChange = (index: number, field: keyof BillVoucherItemRecord, value: unknown) => {
     setItems((prev) => {
       const updated = [...prev];
@@ -644,12 +665,12 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
                       {idx + 1}
                     </td>
                     <td className="p-1">
-                      <input
-                        type="text"
-                        className="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500"
-                        placeholder="e.g. Main Board Replacement"
+                      <PartAutocompleteInput
                         value={item.description}
-                        onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
+                        parts={labParts}
+                        placeholder="Search / enter part or work..."
+                        onChange={(text) => handleItemChange(idx, 'description', text)}
+                        onSelectPart={(part) => handleSelectLabPart(idx, part)}
                         required
                       />
                     </td>

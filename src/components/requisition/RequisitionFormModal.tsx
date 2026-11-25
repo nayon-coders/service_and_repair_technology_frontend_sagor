@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Trash2, ClipboardList, Sparkles } from 'lucide-react';
-import { Modal, Input, Select, Textarea, DatePicker, Button } from '../common';
+import { Modal, Input, Select, Textarea, DatePicker, Button, PartAutocompleteInput } from '../common';
 import { 
   RequisitionRecord, 
   RequisitionItemRecord, 
@@ -9,10 +9,12 @@ import {
   UpdateRequisitionInput, 
   CustomerType, 
   RequisitionStatus,
-  RequisitionItemCategory 
+  RequisitionItemCategory,
+  LabPartRecord 
 } from '../../types';
 import { fetchNextEstimateNo } from '../../services/requisitionService';
 import { fetchProblemTemplates } from '../../services/templateService';
+import { fetchLabParts } from '../../services/labInventoryService';
 
 interface RequisitionFormModalProps {
   isOpen: boolean;
@@ -61,6 +63,7 @@ export const RequisitionFormModal: React.FC<RequisitionFormModalProps> = ({
   const [preparedBy, setPreparedBy] = useState('1 Service & Repair Technology.');
   const [clientApprovalNote, setClientApprovalNote] = useState('');
   const [problemTemplates, setProblemTemplates] = useState<string[]>([]);
+  const [labParts, setLabParts] = useState<LabPartRecord[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -74,6 +77,7 @@ export const RequisitionFormModal: React.FC<RequisitionFormModalProps> = ({
     if (!isOpen) return;
 
     fetchProblemTemplates().then(setProblemTemplates).catch(() => {});
+    fetchLabParts().then(setLabParts).catch((err) => console.warn('Could not load lab parts:', err));
 
     if (initialData) {
       setEstimateNo(initialData.estimateNo);
@@ -144,6 +148,23 @@ export const RequisitionFormModal: React.FC<RequisitionFormModalProps> = ({
         current.totalPrice = qty * unitPrice;
       }
 
+      updated[index] = current;
+      return updated;
+    });
+  };
+
+  // Handler for selecting spare part from Lab inventory dropdown
+  const handleSelectLabPart = (index: number, part: LabPartRecord) => {
+    setSpareParts((prev) => {
+      const updated = [...prev];
+      const current = { ...updated[index] };
+      current.description = part.name;
+      // Default qty 1 if not set or <= 0
+      const qty = Number(current.qty) > 0 ? Number(current.qty) : 1;
+      const unitPrice = Number(part.unitPrice) || 0;
+      current.qty = qty;
+      current.unitPrice = unitPrice;
+      current.totalPrice = qty * unitPrice;
       updated[index] = current;
       return updated;
     });
@@ -435,12 +456,12 @@ export const RequisitionFormModal: React.FC<RequisitionFormModalProps> = ({
             <p className="text-xs text-rose-600 font-medium mb-2">{errors.items}</p>
           )}
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto min-h-[180px] pb-8">
             <table className="w-full text-xs">
               <thead>
                 <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-300">
                   <th className="p-2 w-10 text-center">SL</th>
-                  <th className="p-2 text-left">Description</th>
+                  <th className="p-2 text-left min-w-[260px]">Description (Lab Parts Suggestion)</th>
                   <th className="p-2 w-16 text-center">Qty</th>
                   <th className="p-2 w-28 text-right">Unit Price (৳)</th>
                   <th className="p-2 w-28 text-right">Total Price (৳)</th>
@@ -453,12 +474,12 @@ export const RequisitionFormModal: React.FC<RequisitionFormModalProps> = ({
                   <tr key={`sp-${idx}`} className="hover:bg-slate-50">
                     <td className="p-2 text-center font-bold text-slate-500">{idx + 1}</td>
                     <td className="p-1">
-                      <input
-                        type="text"
-                        className="w-full px-2 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500"
-                        placeholder="Spare part description"
+                      <PartAutocompleteInput
                         value={item.description}
-                        onChange={(e) => handleItemChange('SPARE_PARTS', idx, 'description', e.target.value)}
+                        parts={labParts}
+                        placeholder="Type to search Lab inventory..."
+                        onChange={(text) => handleItemChange('SPARE_PARTS', idx, 'description', text)}
+                        onSelectPart={(part) => handleSelectLabPart(idx, part)}
                       />
                     </td>
                     <td className="p-1">

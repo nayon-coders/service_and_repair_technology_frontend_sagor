@@ -16,4 +16,5 @@ export * from './FilterDropdown';
 export * from './Pagination';
 export * from './DataTable';
 export * from './ProtectedRoute';
+export * from './PartAutocompleteInput';
 
