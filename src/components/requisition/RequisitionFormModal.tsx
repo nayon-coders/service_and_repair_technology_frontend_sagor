@@ -456,7 +456,7 @@ export const RequisitionFormModal: React.FC<RequisitionFormModalProps> = ({
             <p className="text-xs text-rose-600 font-medium mb-2">{errors.items}</p>
           )}
 
-          <div className="overflow-x-auto min-h-[180px] pb-8">
+          <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
                 <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-300">
