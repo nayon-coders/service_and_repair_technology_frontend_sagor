@@ -337,13 +337,15 @@ export const RequisitionDocument: React.FC<RequisitionDocumentProps> = ({ requis
               </div>
             </div>
 
-            <div className="text-right flex flex-col items-end">
-              <p className="font-bold text-slate-900">Client Approval</p>
-              {requisition.clientApprovalNote && (
-                <p className="text-[11px] text-slate-600 italic max-w-xs">{requisition.clientApprovalNote}</p>
-              )}
-              <div className="mt-14 border-t border-slate-700 pt-1 w-48 text-center">
-                <p className="font-semibold text-slate-800">Seal &amp; Signature</p>
+            <div className="flex flex-col items-end">
+              <div className="w-48 text-center">
+                <p className="font-bold text-slate-900">Client Approval</p>
+                {requisition.clientApprovalNote && (
+                  <p className="text-[11px] text-slate-600 italic mt-0.5">{requisition.clientApprovalNote}</p>
+                )}
+                <div className="mt-10 border-t border-slate-700 pt-1">
+                  <p className="font-semibold text-slate-800">Seal &amp; Signature</p>
+                </div>
               </div>
             </div>
           </div>
