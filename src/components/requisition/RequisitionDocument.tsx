@@ -66,10 +66,6 @@ export const RequisitionDocument: React.FC<RequisitionDocumentProps> = ({ requis
       {/* Content Container (Layered above watermark) */}
       <div className="relative z-10 flex flex-col justify-between h-full bg-transparent">
         <div>
-          
-          {/* Top Patterned Bar */}
-          <div className="w-full h-2 mb-3 bg-[radial-gradient(#002060_1.5px,transparent_1.5px)] [background-size:6px_6px] opacity-70"></div>
-
           {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-3">
             {/* Logo */}
@@ -105,14 +101,14 @@ export const RequisitionDocument: React.FC<RequisitionDocumentProps> = ({ requis
           </div>
 
           {/* Section: Title Banner & Estimate Meta */}
-          <div className="flex items-stretch border-2 border-[#002060] mb-3 overflow-hidden bg-white">
-            <div className="bg-[#002060] text-white flex-1 px-4 py-2.5 flex items-center print:bg-[#002060]">
-              <h2 className="text-lg sm:text-xl font-black uppercase tracking-wider text-white">
+          <div className="flex items-stretch border-2 border-[#002060] mb-2.5 overflow-hidden bg-white">
+            <div className="bg-[#002060] text-white flex-1 px-3 py-1 flex items-center print:bg-[#002060]">
+              <h2 className="text-sm sm:text-base font-black uppercase tracking-wider text-white">
                 REPAIR COST ESTIMATE
               </h2>
             </div>
 
-            <div className="w-64 bg-white p-2 text-xs border-l-2 border-[#002060] flex flex-col justify-center space-y-1">
+            <div className="w-60 bg-white px-2.5 py-1 text-[11px] border-l-2 border-[#002060] flex flex-col justify-center space-y-0.5">
               <div className="flex justify-between">
                 <span className="font-bold text-slate-800">Estimate No :</span>
                 <span className="font-semibold font-mono text-slate-900">{requisition.estimateNo}</span>
