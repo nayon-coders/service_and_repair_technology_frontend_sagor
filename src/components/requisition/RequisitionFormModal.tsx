@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, ClipboardList } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Plus, Trash2, ClipboardList, Sparkles } from 'lucide-react';
 import { Modal, Input, Select, Textarea, DatePicker, Button } from '../common';
 import { 
   RequisitionRecord, 
@@ -11,6 +12,7 @@ import {
   RequisitionItemCategory 
 } from '../../types';
 import { fetchNextEstimateNo } from '../../services/requisitionService';
+import { fetchProblemTemplates } from '../../services/templateService';
 
 interface RequisitionFormModalProps {
   isOpen: boolean;
@@ -58,6 +60,7 @@ export const RequisitionFormModal: React.FC<RequisitionFormModalProps> = ({
   const [status, setStatus] = useState<RequisitionStatus>('PENDING');
   const [preparedBy, setPreparedBy] = useState('1 Service & Repair Technology.');
   const [clientApprovalNote, setClientApprovalNote] = useState('');
+  const [problemTemplates, setProblemTemplates] = useState<string[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -69,6 +72,8 @@ export const RequisitionFormModal: React.FC<RequisitionFormModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
+
+    fetchProblemTemplates().then(setProblemTemplates).catch(() => {});
 
     if (initialData) {
       setEstimateNo(initialData.estimateNo);
@@ -366,6 +371,46 @@ export const RequisitionFormModal: React.FC<RequisitionFormModalProps> = ({
               placeholder="Describe the malfunction, error codes, and inspection findings..."
               rows={2}
             />
+
+            {/* Quick Clickable Problem Templates */}
+            {problemTemplates.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                  <span className="flex items-center gap-1 text-slate-600 font-semibold">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    ক্লিক করে সমস্যা বসান (Quick Problem Templates):
+                  </span>
+                  <Link
+                    to="/settings/problem-templates"
+                    target="_blank"
+                    className="text-blue-600 hover:text-blue-700 hover:underline text-[11px] font-medium"
+                  >
+                    + নতুন সমস্যা যুক্ত করুন (Settings)
+                  </Link>
+                </div>
+                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                  {problemTemplates.map((tmpl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setFaultDescription((prev) => {
+                          const trimmed = prev.trim();
+                          if (!trimmed) return tmpl;
+                          if (trimmed.includes(tmpl)) return prev;
+                          const sep = trimmed.endsWith('.') || trimmed.endsWith(';') ? ' ' : '; ';
+                          return trimmed + sep + tmpl;
+                        });
+                      }}
+                      className="text-left px-2 py-1 text-[11px] bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-300 hover:border-blue-400 rounded-md transition-all shadow-2xs cursor-pointer select-none"
+                      title="ক্লিক করলে ইনপুটে বসে যাবে"
+                    >
+                      + {tmpl}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

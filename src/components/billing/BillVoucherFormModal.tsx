@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Receipt, ClipboardList, CheckCircle2, RotateCcw } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Plus, Trash2, Receipt, ClipboardList, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react';
 import { Modal, Input, Select, Textarea, DatePicker, Button } from '../common';
 import { 
   BillVoucherRecord, 
@@ -14,6 +15,7 @@ import {
 } from '../../types';
 import { fetchNextVoucherNo } from '../../services/voucherService';
 import { fetchRequisitions } from '../../services/requisitionService';
+import { fetchProblemTemplates } from '../../services/templateService';
 
 interface BillVoucherFormModalProps {
   isOpen: boolean;
@@ -104,6 +106,7 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
   const [serialNo, setSerialNo] = useState('');
   const [department, setDepartment] = useState('');
   const [problemComplaint, setProblemComplaint] = useState('');
+  const [problemTemplates, setProblemTemplates] = useState<string[]>([]);
   const [receivedDate, setReceivedDate] = useState('');
 
   // Line Items
@@ -246,6 +249,15 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
     }
     setErrors({});
   }, [isOpen, initialData, defaultCustomerType, initialRequisitionId]);
+
+  // Load problem templates when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchProblemTemplates()
+        .then((list) => setProblemTemplates(list))
+        .catch((err) => console.warn('Could not load problem templates:', err));
+    }
+  }, [isOpen]);
 
   // Line items handlers
   const handleItemChange = (index: number, field: keyof BillVoucherItemRecord, value: unknown) => {
@@ -549,6 +561,45 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
               placeholder="Describe equipment malfunction or service complaints reported by client..."
               rows={2}
             />
+
+            {problemTemplates.length > 0 && (
+              <div className="mt-2">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-semibold text-slate-600 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    ক্লিক করে সমস্যা বসান (Quick Problem Templates):
+                  </span>
+                  <Link
+                    to="/settings/problem-templates"
+                    target="_blank"
+                    className="text-blue-600 hover:text-blue-700 hover:underline text-[11px] font-medium"
+                  >
+                    + নতুন সমস্যা যুক্ত করুন (Settings)
+                  </Link>
+                </div>
+                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                  {problemTemplates.map((tmpl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setProblemComplaint((prev) => {
+                          const trimmed = prev.trim();
+                          if (!trimmed) return tmpl;
+                          if (trimmed.includes(tmpl)) return prev;
+                          const sep = trimmed.endsWith('.') || trimmed.endsWith(';') ? ' ' : '; ';
+                          return trimmed + sep + tmpl;
+                        });
+                      }}
+                      className="text-left px-2 py-1 text-[11px] bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-300 hover:border-blue-400 rounded-md transition-all shadow-2xs cursor-pointer select-none"
+                      title="ক্লিক করলে ইনপুটে বসে যাবে"
+                    >
+                      + {tmpl}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

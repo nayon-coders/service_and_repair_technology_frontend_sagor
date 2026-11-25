@@ -23,6 +23,7 @@ import {
   UserCheck, 
   Lock, 
   Sliders, 
+  AlertCircle,
   LucideIcon 
 } from 'lucide-react';
 
@@ -183,6 +184,12 @@ export const navigationConfig: NavItem[] = [
         title: 'System Settings',
         href: '/settings/system',
         icon: Sliders,
+      },
+      {
+        id: 'settings-problem-templates',
+        title: 'Problem Templates',
+        href: '/settings/problem-templates',
+        icon: AlertCircle,
       },
     ],
   },

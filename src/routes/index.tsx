@@ -33,6 +33,7 @@ import { NonCorporateGatePassPage } from '../pages/customer/nonCorporate/NonCorp
 import { ProfileSettingsPage } from '../pages/settings/ProfileSettingsPage';
 import { ChangePasswordPage } from '../pages/settings/ChangePasswordPage';
 import { SystemSettingsPage } from '../pages/settings/SystemSettingsPage';
+import { ProblemTemplatesPage } from '../pages/settings/ProblemTemplatesPage';
 import { EmployeePage } from '../pages/employee/EmployeePage';
 import { BillVoucherPrintPage } from '../pages/customer/BillVoucherPrintPage';
 import { RequisitionPrintPage } from '../pages/customer/RequisitionPrintPage';
@@ -136,6 +137,7 @@ export const AppRoutes: React.FC = () => {
             <Route path="/settings/profile" element={<ProfileSettingsPage />} />
             <Route path="/settings/change-password" element={<ChangePasswordPage />} />
             <Route path="/settings/system" element={<SystemSettingsPage />} />
+            <Route path="/settings/problem-templates" element={<ProblemTemplatesPage />} />
             <Route path="/settings" element={<Navigate to="/settings/profile" replace />} />
           </Route>
 
