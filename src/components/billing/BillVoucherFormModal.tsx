@@ -633,6 +633,22 @@ export const BillVoucherFormModal: React.FC<BillVoucherFormModalProps> = ({
                         value={item.remarks || ''}
                         onChange={(e) => handleItemChange(idx, 'remarks', e.target.value)}
                       />
+                      <div className="flex items-center gap-1 mt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleItemChange(idx, 'remarks', 'Repairable')}
+                          className="px-1.5 py-0.5 text-[10px] font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 rounded transition-colors cursor-pointer select-none"
+                        >
+                          Repairable
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleItemChange(idx, 'remarks', 'Un-Repairable')}
+                          className="px-1.5 py-0.5 text-[10px] font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 rounded transition-colors cursor-pointer select-none"
+                        >
+                          Un-Repairable
+                        </button>
+                      </div>
                     </td>
                     <td className="p-1 text-center">
                       {items.length > 1 && (

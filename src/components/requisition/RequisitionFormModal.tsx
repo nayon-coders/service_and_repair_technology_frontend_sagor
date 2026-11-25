@@ -442,10 +442,26 @@ export const RequisitionFormModal: React.FC<RequisitionFormModalProps> = ({
                       <input
                         type="text"
                         className="w-full px-2 py-1.5 border border-slate-300 rounded text-xs"
-                        placeholder="e.g. Repairable / OEM"
+                        placeholder="Remarks"
                         value={item.remarks || ''}
                         onChange={(e) => handleItemChange('SPARE_PARTS', idx, 'remarks', e.target.value)}
                       />
+                      <div className="flex items-center gap-1 mt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleItemChange('SPARE_PARTS', idx, 'remarks', 'Repairable')}
+                          className="px-1.5 py-0.5 text-[10px] font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 rounded transition-colors cursor-pointer select-none"
+                        >
+                          Repairable
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleItemChange('SPARE_PARTS', idx, 'remarks', 'Un-Repairable')}
+                          className="px-1.5 py-0.5 text-[10px] font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 rounded transition-colors cursor-pointer select-none"
+                        >
+                          Un-Repairable
+                        </button>
+                      </div>
                     </td>
                     <td className="p-1 text-center">
                       {spareParts.length > 1 && (
@@ -538,6 +554,22 @@ export const RequisitionFormModal: React.FC<RequisitionFormModalProps> = ({
                         value={item.remarks || ''}
                         onChange={(e) => handleItemChange('SERVICE_LABOUR', idx, 'remarks', e.target.value)}
                       />
+                      <div className="flex items-center gap-1 mt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleItemChange('SERVICE_LABOUR', idx, 'remarks', 'Repairable')}
+                          className="px-1.5 py-0.5 text-[10px] font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 rounded transition-colors cursor-pointer select-none"
+                        >
+                          Repairable
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleItemChange('SERVICE_LABOUR', idx, 'remarks', 'Un-Repairable')}
+                          className="px-1.5 py-0.5 text-[10px] font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 rounded transition-colors cursor-pointer select-none"
+                        >
+                          Un-Repairable
+                        </button>
+                      </div>
                     </td>
                     <td className="p-1 text-center">
                       {serviceItems.length > 1 && (
